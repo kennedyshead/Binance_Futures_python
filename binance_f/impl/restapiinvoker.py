@@ -1,7 +1,12 @@
+import logging
+
 import requests
 from binance_f.exception.binanceapiexception import BinanceApiException
 from binance_f.impl.utils import *
+
 # from binance_f.base.printobject import *
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def check_response(json_wrapper):
@@ -11,40 +16,46 @@ def check_response(json_wrapper):
             err_code = json_wrapper.get_int_or_default("code", "")
             err_msg = json_wrapper.get_string_or_default("msg", "")
             if err_code == "":
-                raise BinanceApiException(BinanceApiException.EXEC_ERROR, "[Executing] " + err_msg)
+                raise BinanceApiException(BinanceApiException.EXEC_ERROR,
+                                          "[Executing] " + err_msg)
             else:
-                raise BinanceApiException(BinanceApiException.EXEC_ERROR, "[Executing] " + str(err_code) + ": " + err_msg)
+                raise BinanceApiException(BinanceApiException.EXEC_ERROR,
+                                          "[Executing] " + str(
+                                              err_code) + ": " + err_msg)
     elif json_wrapper.contain_key("code"):
         code = json_wrapper.get_int("code")
         msg = json_wrapper.get_string_or_default("msg", "")
         if code != 200:
-            raise BinanceApiException(BinanceApiException.EXEC_ERROR, "[Executing] " + str(code) + ": " + msg)
+            raise BinanceApiException(BinanceApiException.EXEC_ERROR,
+                                      "[Executing] " + str(code) + ": " + msg)
 
 
 def call_sync(request):
     if request.method == "GET":
-        response = requests.get(request.host + request.url, headers=request.header)
+        response = requests.get(request.host + request.url,
+                                headers=request.header)
         json_wrapper = parse_json_from_string(response.text)
-        print(response.text)
+        _LOGGER.info(response.text)
         check_response(json_wrapper)
         return request.json_parser(json_wrapper)
     elif request.method == "POST":
-        response = requests.post(request.host + request.url, headers=request.header)
+        response = requests.post(request.host + request.url,
+                                 headers=request.header)
         json_wrapper = parse_json_from_string(response.text)
-        print(response.text)
+        _LOGGER.info(response.text)
         check_response(json_wrapper)
         return request.json_parser(json_wrapper)
     elif request.method == "DELETE":
-        response = requests.delete(request.host + request.url, headers=request.header)
+        response = requests.delete(request.host + request.url,
+                                   headers=request.header)
         json_wrapper = parse_json_from_string(response.text)
-        print(response.text)
+        _LOGGER.info(response.text)
         check_response(json_wrapper)
         return request.json_parser(json_wrapper)
     elif request.method == "PUT":
-        response = requests.put(request.host + request.url, headers=request.header)
+        response = requests.put(request.host + request.url,
+                                headers=request.header)
         json_wrapper = parse_json_from_string(response.text)
-        print(response.text)
+        _LOGGER.info(response.text)
         check_response(json_wrapper)
         return request.json_parser(json_wrapper)
-
-

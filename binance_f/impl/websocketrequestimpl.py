@@ -1,12 +1,11 @@
-import time
+import logging
+
 from binance_f.impl.websocketrequest import WebsocketRequest
 from binance_f.impl.utils.channels import *
-from binance_f.impl.utils.channelparser import ChannelParser
-from binance_f.impl.utils.timeservice import *
 from binance_f.impl.utils.inputchecker import *
 from binance_f.model import *
-# For develop
-from binance_f.base.printobject import *
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class WebsocketRequestImpl(object):
@@ -14,7 +13,8 @@ class WebsocketRequestImpl(object):
     def __init__(self, api_key):
         self.__api_key = api_key
 
-    def subscribe_aggregate_trade_event(self, symbol, callback, error_handler=None):
+    def subscribe_aggregate_trade_event(self, symbol, callback,
+                                        error_handler=None):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(callback, "callback")
 
@@ -53,8 +53,9 @@ class WebsocketRequestImpl(object):
         request.error_handler = error_handler
 
         return request
-    
-    def subscribe_candlestick_event(self, symbol, interval, callback, error_handler=None):
+
+    def subscribe_candlestick_event(self, symbol, interval, callback,
+                                    error_handler=None):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(interval, "interval")
         check_should_not_none(callback, "callback")
@@ -74,8 +75,9 @@ class WebsocketRequestImpl(object):
         request.error_handler = error_handler
 
         return request
-    
-    def subscribe_symbol_miniticker_event(self, symbol, callback, error_handler=None):
+
+    def subscribe_symbol_miniticker_event(self, symbol, callback,
+                                          error_handler=None):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(callback, "callback")
 
@@ -118,7 +120,8 @@ class WebsocketRequestImpl(object):
 
         return request
 
-    def subscribe_symbol_ticker_event(self, symbol, callback, error_handler=None):
+    def subscribe_symbol_ticker_event(self, symbol, callback,
+                                      error_handler=None):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(callback, "callback")
 
@@ -137,7 +140,7 @@ class WebsocketRequestImpl(object):
         request.error_handler = error_handler
 
         return request
-    
+
     def subscribe_all_ticker_event(self, callback, error_handler=None):
         check_should_not_none(callback, "callback")
 
@@ -161,7 +164,8 @@ class WebsocketRequestImpl(object):
 
         return request
 
-    def subscribe_symbol_bookticker_event(self, symbol, callback, error_handler=None):
+    def subscribe_symbol_bookticker_event(self, symbol, callback,
+                                          error_handler=None):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(callback, "callback")
 
@@ -199,8 +203,9 @@ class WebsocketRequestImpl(object):
         request.error_handler = error_handler
 
         return request
-    
-    def subscribe_symbol_liquidation_event(self, symbol, callback, error_handler=None):
+
+    def subscribe_symbol_liquidation_event(self, symbol, callback,
+                                           error_handler=None):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(callback, "callback")
 
@@ -219,7 +224,7 @@ class WebsocketRequestImpl(object):
         request.error_handler = error_handler
 
         return request
-    
+
     def subscribe_all_liquidation_event(self, callback, error_handler=None):
         check_should_not_none(callback, "callback")
 
@@ -239,11 +244,12 @@ class WebsocketRequestImpl(object):
 
         return request
 
-    def subscribe_book_depth_event(self, symbol, limit, update_time, callback, error_handler=None):
+    def subscribe_book_depth_event(self, symbol, limit, update_time, callback,
+                                   error_handler=None):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(limit, "limit")
         check_should_not_none(callback, "callback")
-        #print(update_time)
+
         def subscription_handler(connection):
             connection.send(book_depth_channel(symbol, limit, update_time))
             time.sleep(0.01)
@@ -260,7 +266,8 @@ class WebsocketRequestImpl(object):
 
         return request
 
-    def subscribe_diff_depth_event(self, symbol, update_time, callback, error_handler=None):
+    def subscribe_diff_depth_event(self, symbol, update_time, callback,
+                                   error_handler=None):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(callback, "callback")
 
@@ -280,8 +287,8 @@ class WebsocketRequestImpl(object):
 
         return request
 
-  
-    def subscribe_user_data_event(self, listenKey, callback, error_handler=None):
+    def subscribe_user_data_event(
+            self, listenKey, callback, error_handler=None):
         check_should_not_none(listenKey, "listenKey")
         check_should_not_none(callback, "callback")
 
@@ -290,14 +297,17 @@ class WebsocketRequestImpl(object):
             time.sleep(0.01)
 
         def json_parse(json_wrapper):
-            print("event type: ", json_wrapper.get_string("e"))
-            print(json_wrapper)
-            if(json_wrapper.get_string("e") == "ACCOUNT_UPDATE"):
+            _LOGGER.info("event type: ", json_wrapper.get_string("e"))
+            _LOGGER.info(json_wrapper)
+
+            result = None
+            if json_wrapper.get_string("e") == "ACCOUNT_UPDATE":
                 result = AccountUpdate.json_parse(json_wrapper)
-            elif(json_wrapper.get_string("e") == "ORDER_TRADE_UPDATE"):
+            elif json_wrapper.get_string("e") == "ORDER_TRADE_UPDATE":
                 result = OrderUpdate.json_parse(json_wrapper)
-            elif(json_wrapper.get_string("e") == "listenKeyExpired"):
+            elif json_wrapper.get_string("e") == "listenKeyExpired":
                 result = ListenKeyExpired.json_parse(json_wrapper)
+
             return result
 
         request = WebsocketRequest()
@@ -307,5 +317,3 @@ class WebsocketRequestImpl(object):
         request.error_handler = error_handler
 
         return request
-           
- 

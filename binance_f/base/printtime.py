@@ -1,9 +1,7 @@
-import sys
-
-
+import logging
 import time
 
-
+_LOGGER = logging.get_logger(__name__)
 
 
 class PrintDate:
@@ -13,9 +11,10 @@ class PrintDate:
             ts_minsecond = int(ts_minsecond)
             time_local = time.localtime(int(ts_minsecond / 1000))
             dt = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
-            print("ping " + str(ts_minsecond) + ":" + dt)
+            _LOGGER.info("ping " + str(ts_minsecond) + ":" + dt)
         except Exception as e:
-            print(e)
+            _LOGGER.error(e)
+
 
 if __name__ == "__main__":
     ping_ts = 1569319465421

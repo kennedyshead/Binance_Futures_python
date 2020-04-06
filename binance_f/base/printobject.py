@@ -1,3 +1,4 @@
+import logging
 import sys
 
 BASIC_DATA_TYPE = (int, str, float)
@@ -9,6 +10,8 @@ TYPE_OBJECT = "type_object"
 TYPE_LIST = "type_list"
 TYPE_DICT = "type_dict"
 TYPE_UNDEFINED = "type_undefined"
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class TypeCheck:
@@ -52,9 +55,9 @@ class PrintBasic:
     @staticmethod
     def print_basic(data, name=None):
         if name and len(name):
-            print(str(name) + " : " + str(data))
+            _LOGGER.info(str(name) + " : " + str(data))
         else:
-            print(str(data))
+            _LOGGER.info(str(data))
 
     @staticmethod
     def print_basic_bool(data, name=None):
@@ -63,9 +66,9 @@ class PrintBasic:
             bool_desc = "False"
 
         if name and len(name):
-            print(str(name) + " : " + str(bool_desc))
+            _LOGGER.info(str(name) + " : " + str(bool_desc))
         else:
-            print(str(bool_desc))
+            _LOGGER.info(str(bool_desc))
 
     @staticmethod
     def print_obj(obj):
@@ -75,7 +78,7 @@ class PrintBasic:
         members = [attr for attr in dir(obj) if not callable(attr) and not attr.startswith("__")]
         for member_def in members:
             val_str = str(getattr(obj, member_def))
-            print(member_def + ":" + val_str)
+            _LOGGER.info(member_def + ":" + val_str)
         return 0
 
 
@@ -83,7 +86,7 @@ class PrintList:
     @staticmethod
     def print_list_data(obj):
         if not obj:
-            print("object is None")
+            _LOGGER.debug("object is None")
             return -1
 
         if TypeCheck.get_obj_type(obj) == TYPE_LIST:
@@ -97,7 +100,7 @@ class PrintList:
     @staticmethod
     def print_origin_object(obj):
         if not obj:
-            print("object is None")
+            _LOGGER.debug("object is None")
             return -1
         obj_type = TypeCheck.get_obj_type(obj)
 
@@ -124,10 +127,10 @@ class PrintList:
         print ("data count : ", (len(obj_list)))
         print ("\n")
         for idx, row in enumerate(obj_list):
-            print("data number " + (str(idx)) + " :")
+            _LOGGER.info("data number " + (str(idx)) + " :")
             PrintList.print_origin_object(row)
-            print("\n")
-        print("\n\n")
+            _LOGGER.debug("\n")
+        _LOGGER.debug("\n\n")
 
         return 0
 
@@ -145,8 +148,8 @@ class PrintList:
         for key, row in obj_dict.items():
             PrintBasic.print_basic(str(key) + " :")
             PrintList.print_origin_object(row)
-            print("\n")
-        print("\n\n")
+            _LOGGER.debug("\n")
+        _LOGGER.debug("\n\n")
 
         return 0
 
@@ -198,13 +201,13 @@ if __name__ == "__main__":
     PrintMix.print_data(symbol_list)
     PrintMix.print_data(symbol_dict)
 
-    print(type(symbol_list) == list)
-    print(type(symbol_dict) == dict)
-    print(type(symbol_list) == object)
-    print(isinstance(symbol_list, list))
-    print(isinstance(symbol_list, object))
-    print(isinstance(symbol_dict, dict))
-    print(isinstance(symbol_dict, object))
+    _LOGGER.debug(type(symbol_list) == list)
+    _LOGGER.debug(type(symbol_dict) == dict)
+    _LOGGER.debug(type(symbol_list) == object)
+    _LOGGER.debug(isinstance(symbol_list, list))
+    _LOGGER.debug(isinstance(symbol_list, object))
+    _LOGGER.debug(isinstance(symbol_dict, dict))
+    _LOGGER.debug(isinstance(symbol_dict, object))
     """
 
     a=['s', 'h', 'i']

@@ -1,17 +1,20 @@
 from binance_f.impl import RestApiRequest
 from binance_f.impl.utils.urlparamsbuilder import UrlParamsBuilder
 from binance_f.impl.utils.apisignature import create_signature
-from binance_f.impl.utils.apisignature import create_signature_with_query
 from binance_f.impl.utils.inputchecker import *
 from binance_f.impl.utils.timeservice import *
 from binance_f.model import *
+
 # For develop
 from binance_f.base.printobject import *
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class RestApiRequestImpl(object):
 
-    def __init__(self, api_key, secret_key, server_url="https://fapi.binance.com"):
+    def __init__(self, api_key, secret_key,
+                 server_url="https://fapi.binance.com"):
         self.__api_key = api_key
         self.__secret_key = secret_key
         self.__server_url = server_url
@@ -31,11 +34,11 @@ class RestApiRequestImpl(object):
         request.header.update({'Content-Type': 'application/json'})
         request.header.update({"X-MBX-APIKEY": self.__api_key})
         request.url = url + "?" + builder.build_url()
-         # For develop
-        print("====== Request ======")
-        print(request)
+        # For develop
+        _LOGGER.debug("====== Request ======")
+        _LOGGER.info(request)
         PrintMix.print_data(request)
-        print("=====================")
+        _LOGGER.debug("=====================")
         return request
 
     def __create_request_by_post_with_signature(self, url, builder):
@@ -50,10 +53,10 @@ class RestApiRequestImpl(object):
         request.post_body = builder.post_map
         request.url = url + "?" + builder.build_url()
         # For develop
-        print("====== Request ======")
-        print(request)
+        _LOGGER.debug("====== Request ======")
+        _LOGGER.info(request)
         PrintMix.print_data(request)
-        print("=====================")
+        _LOGGER.debug("=====================")
         return request
 
     def __create_request_by_delete_with_signature(self, url, builder):
@@ -67,10 +70,10 @@ class RestApiRequestImpl(object):
         request.header.update({"X-MBX-APIKEY": self.__api_key})
         request.url = url + "?" + builder.build_url()
         # For develop
-        print("====== Request ======")
-        print(request)
+        _LOGGER.debug("====== Request ======")
+        _LOGGER.info(request)
         PrintMix.print_data(request)
-        print("=====================")
+        _LOGGER.debug("=====================")
         return request
 
     def __create_request_by_get_with_signature(self, url, builder):
@@ -80,14 +83,15 @@ class RestApiRequestImpl(object):
         builder.put_url("recvWindow", 60000)
         builder.put_url("timestamp", str(get_current_timestamp() - 1000))
         create_signature(self.__secret_key, builder)
-        request.header.update({"Content-Type": "application/x-www-form-urlencoded"})
+        request.header.update(
+            {"Content-Type": "application/x-www-form-urlencoded"})
         request.header.update({"X-MBX-APIKEY": self.__api_key})
         request.url = url + "?" + builder.build_url()
         # For develop
-        print("====== Request ======")
-        print(request)
+        _LOGGER.debug("====== Request ======")
+        _LOGGER.info(request)
         PrintMix.print_data(request)
-        print("=====================")
+        _LOGGER.debug("=====================")
         return request
 
     def __create_request_by_put_with_signature(self, url, builder):
@@ -101,12 +105,12 @@ class RestApiRequestImpl(object):
         request.header.update({"X-MBX-APIKEY": self.__api_key})
         request.url = url + "?" + builder.build_url()
         # For develop
-        print("====== Request ======")
-        print(request)
+        _LOGGER.debug("====== Request ======")
+        _LOGGER.info(request)
         PrintMix.print_data(request)
-        print("=====================")
+        _LOGGER.debug("=====================")
         return request
-        
+
     def get_servertime(self):
         builder = UrlParamsBuilder()
         request = self.__create_request_by_get("/fapi/v1/time", builder)
@@ -117,10 +121,11 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-         
+
     def get_exchange_information(self):
         builder = UrlParamsBuilder()
-        request = self.__create_request_by_get("/fapi/v1/exchangeInfo", builder)
+        request = self.__create_request_by_get("/fapi/v1/exchangeInfo",
+                                               builder)
 
         def parse(json_wrapper):
             result = ExchangeInformation.json_parse(json_wrapper)
@@ -128,7 +133,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-                
+
     def get_order_book(self, symbol, limit):
         check_should_not_none(symbol, "symbol")
         builder = UrlParamsBuilder()
@@ -143,7 +148,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-       
+
     def get_recent_trades_list(self, symbol, limit):
         check_should_not_none(symbol, "symbol")
         builder = UrlParamsBuilder()
@@ -162,7 +167,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-    
+
     def get_old_trade_lookup(self, symbol, limit, fromId):
         check_should_not_none(symbol, "symbol")
         builder = UrlParamsBuilder()
@@ -170,7 +175,8 @@ class RestApiRequestImpl(object):
         builder.put_url("limit", limit)
         builder.put_url("fromId", fromId)
 
-        request = self.__create_request_by_get_with_apikey("/fapi/v1/historicalTrades", builder)
+        request = self.__create_request_by_get_with_apikey(
+            "/fapi/v1/historicalTrades", builder)
 
         def parse(json_wrapper):
             result = list()
@@ -182,8 +188,9 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-          
-    def get_aggregate_trades_list(self, symbol, fromId, startTime, endTime, limit):
+
+    def get_aggregate_trades_list(self, symbol, fromId, startTime, endTime,
+                                  limit):
         check_should_not_none(symbol, "symbol")
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
@@ -204,8 +211,9 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-          
-    def get_candlestick_data(self, symbol, interval, startTime, endTime, limit):
+
+    def get_candlestick_data(self, symbol, interval, startTime, endTime,
+                             limit):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(symbol, "interval")
         builder = UrlParamsBuilder()
@@ -233,7 +241,8 @@ class RestApiRequestImpl(object):
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
 
-        request = self.__create_request_by_get("/fapi/v1/premiumIndex", builder)
+        request = self.__create_request_by_get("/fapi/v1/premiumIndex",
+                                               builder)
 
         def parse(json_wrapper):
             result = MarkPrice.json_parse(json_wrapper)
@@ -262,7 +271,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-      
+
     def get_ticker_price_change_statistics(self, symbol):
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
@@ -290,7 +299,8 @@ class RestApiRequestImpl(object):
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
 
-        request = self.__create_request_by_get("/fapi/v1/ticker/price", builder)
+        request = self.__create_request_by_get("/fapi/v1/ticker/price",
+                                               builder)
 
         def parse(json_wrapper):
             result = list()
@@ -311,7 +321,8 @@ class RestApiRequestImpl(object):
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
 
-        request = self.__create_request_by_get("/fapi/v1/ticker/bookTicker", builder)
+        request = self.__create_request_by_get("/fapi/v1/ticker/bookTicker",
+                                               builder)
 
         def parse(json_wrapper):
             result = list()
@@ -328,12 +339,12 @@ class RestApiRequestImpl(object):
         request.json_parser = parse
         return request
 
-
     def get_open_interest(self, symbol):
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
 
-        request = self.__create_request_by_get("/fapi/v1/openInterest", builder)
+        request = self.__create_request_by_get("/fapi/v1/openInterest",
+                                               builder)
 
         def parse(json_wrapper):
             result = list()
@@ -344,7 +355,6 @@ class RestApiRequestImpl(object):
         request.json_parser = parse
         return request
 
-
     def get_liquidation_orders(self, symbol, startTime, endTime, limit):
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
@@ -352,7 +362,8 @@ class RestApiRequestImpl(object):
         builder.put_url("endTime", endTime)
         builder.put_url("limit", limit)
 
-        request = self.__create_request_by_get("/fapi/v1/allForceOrders", builder)
+        request = self.__create_request_by_get("/fapi/v1/allForceOrders",
+                                               builder)
 
         def parse(json_wrapper):
             result = list()
@@ -364,9 +375,10 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-      
-    def post_order(self, symbol, side, ordertype, 
-                timeInForce, quantity, reduceOnly, price, newClientOrderId, stopPrice, workingType):
+
+    def post_order(self, symbol, side, ordertype,
+                   timeInForce, quantity, reduceOnly, price, newClientOrderId,
+                   stopPrice, workingType):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(side, "side")
         check_should_not_none(ordertype, "ordertype")
@@ -382,7 +394,8 @@ class RestApiRequestImpl(object):
         builder.put_url("stopPrice", stopPrice)
         builder.put_url("workingType", workingType)
 
-        request = self.__create_request_by_post_with_signature("/fapi/v1/order", builder)
+        request = self.__create_request_by_post_with_signature(
+            "/fapi/v1/order", builder)
 
         def parse(json_wrapper):
             result = Order.json_parse(json_wrapper)
@@ -398,7 +411,8 @@ class RestApiRequestImpl(object):
         builder.put_url("orderId", orderId)
         builder.put_url("origClientOrderId", origClientOrderId)
 
-        request = self.__create_request_by_get_with_signature("/fapi/v1/order", builder)
+        request = self.__create_request_by_get_with_signature("/fapi/v1/order",
+                                                              builder)
 
         def parse(json_wrapper):
             result = Order.json_parse(json_wrapper)
@@ -414,7 +428,8 @@ class RestApiRequestImpl(object):
         builder.put_url("orderId", orderId)
         builder.put_url("origClientOrderId", origClientOrderId)
 
-        request = self.__create_request_by_delete_with_signature("/fapi/v1/order", builder)
+        request = self.__create_request_by_delete_with_signature(
+            "/fapi/v1/order", builder)
 
         def parse(json_wrapper):
             result = Order.json_parse(json_wrapper)
@@ -428,7 +443,8 @@ class RestApiRequestImpl(object):
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
 
-        request = self.__create_request_by_delete_with_signature("/fapi/v1/allOpenOrders", builder)
+        request = self.__create_request_by_delete_with_signature(
+            "/fapi/v1/allOpenOrders", builder)
 
         def parse(json_wrapper):
             result = list()
@@ -447,7 +463,8 @@ class RestApiRequestImpl(object):
         builder.put_url("symbol", symbol)
         builder.put_url("orderIdList", orderIdList)
         builder.put_url("origClientOrderIdList", origClientOrderIdList)
-        request = self.__create_request_by_delete_with_signature("/fapi/v1/batchOrders", builder)
+        request = self.__create_request_by_delete_with_signature(
+            "/fapi/v1/batchOrders", builder)
 
         def parse(json_wrapper):
             result = list()
@@ -467,7 +484,8 @@ class RestApiRequestImpl(object):
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
 
-        request = self.__create_request_by_get_with_signature("/fapi/v1/openOrders", builder)
+        request = self.__create_request_by_get_with_signature(
+            "/fapi/v1/openOrders", builder)
 
         def parse(json_wrapper):
             result = list()
@@ -489,7 +507,8 @@ class RestApiRequestImpl(object):
         builder.put_url("endTime", endTime)
         builder.put_url("limit", limit)
 
-        request = self.__create_request_by_get_with_signature("/fapi/v1/allOrders", builder)
+        request = self.__create_request_by_get_with_signature(
+            "/fapi/v1/allOrders", builder)
 
         def parse(json_wrapper):
             result = list()
@@ -505,7 +524,8 @@ class RestApiRequestImpl(object):
     def get_balance(self):
         builder = UrlParamsBuilder()
 
-        request = self.__create_request_by_get_with_signature("/fapi/v1/balance", builder)
+        request = self.__create_request_by_get_with_signature(
+            "/fapi/v1/balance", builder)
 
         def parse(json_wrapper):
             result = list()
@@ -521,7 +541,8 @@ class RestApiRequestImpl(object):
     def get_account_information(self):
         builder = UrlParamsBuilder()
 
-        request = self.__create_request_by_get_with_signature("/fapi/v1/account", builder)
+        request = self.__create_request_by_get_with_signature(
+            "/fapi/v1/account", builder)
 
         def parse(json_wrapper):
             result = AccountInformation.json_parse(json_wrapper)
@@ -529,7 +550,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-    
+
     def change_initial_leverage(self, symbol, leverage):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(leverage, "leverage")
@@ -537,7 +558,8 @@ class RestApiRequestImpl(object):
         builder.put_url("symbol", symbol)
         builder.put_url("leverage", leverage)
 
-        request = self.__create_request_by_post_with_signature("/fapi/v1/leverage", builder)
+        request = self.__create_request_by_post_with_signature(
+            "/fapi/v1/leverage", builder)
 
         def parse(json_wrapper):
             result = Leverage.json_parse(json_wrapper)
@@ -545,7 +567,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-    
+
     def change_margin_type(self, symbol, marginType):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(marginType, "marginType")
@@ -553,7 +575,8 @@ class RestApiRequestImpl(object):
         builder.put_url("symbol", symbol)
         builder.put_url("marginType", marginType)
 
-        request = self.__create_request_by_post_with_signature("/fapi/v1/marginType", builder)
+        request = self.__create_request_by_post_with_signature(
+            "/fapi/v1/marginType", builder)
 
         def parse(json_wrapper):
             result = ChangeMarginType.json_parse(json_wrapper)
@@ -561,7 +584,7 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-    
+
     def change_position_margin(self, symbol, amount, type):
         check_should_not_none(symbol, "symbol")
         check_should_not_none(amount, "amount")
@@ -571,7 +594,8 @@ class RestApiRequestImpl(object):
         builder.put_url("amount", amount)
         builder.put_url("type", type)
 
-        request = self.__create_request_by_post_with_signature("/fapi/v1/positionMargin", builder)
+        request = self.__create_request_by_post_with_signature(
+            "/fapi/v1/positionMargin", builder)
 
         def parse(json_wrapper):
             result = PositionMargin.json_parse(json_wrapper)
@@ -580,7 +604,8 @@ class RestApiRequestImpl(object):
         request.json_parser = parse
         return request
 
-    def get_position_margin_change_history(self, symbol, type, startTime, endTime, limit):
+    def get_position_margin_change_history(self, symbol, type, startTime,
+                                           endTime, limit):
         check_should_not_none(symbol, "symbol")
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
@@ -589,7 +614,8 @@ class RestApiRequestImpl(object):
         builder.put_url("endTime", endTime)
         builder.put_url("limit", limit)
 
-        request = self.__create_request_by_get_with_signature("/fapi/v1/positionMargin/history", builder)
+        request = self.__create_request_by_get_with_signature(
+            "/fapi/v1/positionMargin/history", builder)
 
         def parse(json_wrapper):
             result = list()
@@ -602,11 +628,11 @@ class RestApiRequestImpl(object):
         request.json_parser = parse
         return request
 
-
     def get_position(self):
         builder = UrlParamsBuilder()
 
-        request = self.__create_request_by_get_with_signature("/fapi/v1/positionRisk", builder)
+        request = self.__create_request_by_get_with_signature(
+            "/fapi/v1/positionRisk", builder)
 
         def parse(json_wrapper):
             result = list()
@@ -628,7 +654,8 @@ class RestApiRequestImpl(object):
         builder.put_url("fromId", fromId)
         builder.put_url("limit", limit)
 
-        request = self.__create_request_by_get_with_signature("/fapi/v1/userTrades", builder)
+        request = self.__create_request_by_get_with_signature(
+            "/fapi/v1/userTrades", builder)
 
         def parse(json_wrapper):
             result = list()
@@ -641,7 +668,8 @@ class RestApiRequestImpl(object):
         request.json_parser = parse
         return request
 
-    def get_income_history(self, symbol, incomeType, startTime, endTime, limit):
+    def get_income_history(self, symbol, incomeType, startTime, endTime,
+                           limit):
         builder = UrlParamsBuilder()
         builder.put_url("symbol", symbol)
         builder.put_url("incomeType", incomeType)
@@ -649,7 +677,8 @@ class RestApiRequestImpl(object):
         builder.put_url("endTime", endTime)
         builder.put_url("limit", limit)
 
-        request = self.__create_request_by_get_with_signature("/fapi/v1/income", builder)
+        request = self.__create_request_by_get_with_signature(
+            "/fapi/v1/income", builder)
 
         def parse(json_wrapper):
             result = list()
@@ -665,7 +694,8 @@ class RestApiRequestImpl(object):
     def start_user_data_stream(self):
         builder = UrlParamsBuilder()
 
-        request = self.__create_request_by_post_with_signature("/fapi/v1/listenKey", builder)
+        request = self.__create_request_by_post_with_signature(
+            "/fapi/v1/listenKey", builder)
 
         def parse(json_wrapper):
             result = json_wrapper.get_string("listenKey")
@@ -673,11 +703,12 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-      
+
     def keep_user_data_stream(self):
         builder = UrlParamsBuilder()
 
-        request = self.__create_request_by_put_with_signature("/fapi/v1/listenKey", builder)
+        request = self.__create_request_by_put_with_signature(
+            "/fapi/v1/listenKey", builder)
 
         def parse(json_wrapper):
             result = "OK"
@@ -685,11 +716,12 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-      
+
     def close_user_data_stream(self):
         builder = UrlParamsBuilder()
 
-        request = self.__create_request_by_delete_with_signature("/fapi/v1/listenKey", builder)
+        request = self.__create_request_by_delete_with_signature(
+            "/fapi/v1/listenKey", builder)
 
         def parse(json_wrapper):
             result = "OK"
@@ -697,4 +729,3 @@ class RestApiRequestImpl(object):
 
         request.json_parser = parse
         return request
-      
