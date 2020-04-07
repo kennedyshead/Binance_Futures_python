@@ -1,7 +1,7 @@
 class Candlestick:
 
     def __init__(self):
-        self.openTime = 0
+        self.date = 0
         self.open = 0.0
         self.high = 0.0
         self.low = 0.0
@@ -18,7 +18,7 @@ class Candlestick:
     def json_parse(json_data):
         result = Candlestick()
         val = json_data.convert_2_list()
-        result.openTime = val[0]
+        result.date = val[0]
         result.open = val[1]
         result.high = val[2]
         result.low = val[3]
@@ -30,5 +30,5 @@ class Candlestick:
         result.takerBuyBaseAssetVolume = val[9]
         result.takerBuyQuoteAssetVolume = val[10]
         result.ignore = val[11]
-  
+
         return result
